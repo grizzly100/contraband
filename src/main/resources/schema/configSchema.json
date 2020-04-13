@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Configuration",
+  "description": "Configuration schema",
+  "type": "object",
+  "properties": {
+    "validationSchema": {
+      "description": "schema to validate documents against",
+      "type": "string"
+    },
+    "outputProperties": {
+      "description": "properties to output",
+      "type": "array",
+      "$comment": "id, artist etc"
+    }
+  },
+  "required": ["validationSchema", "outputProperties"],
+  "additionalProperties": false
+}

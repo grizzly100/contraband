@@ -1,0 +1,4 @@
+{
+  "validationSchema" : "recordingSchema.json",
+  "outputProperties" : ["id", "date","version","source","generation","quality", "resolution","notes"]
+}
