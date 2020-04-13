@@ -15,7 +15,7 @@ public class JSONParse {
         if (parser.hasNext() && parser.next() == JsonParser.Event.START_OBJECT) {
             result = onStartObject(parser);
         } else {
-            System.out.print("Bogus");
+            System.out.print("Bogus!");
         }
         parser.close();
         return result;
