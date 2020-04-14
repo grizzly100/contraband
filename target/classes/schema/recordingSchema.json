@@ -19,6 +19,14 @@
       "type": "string",
       "format": "date"
     },
+    "additionalDates": {
+      "description": "Additional dates if the recording is a compilation",
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format" : "date"
+      }
+    },
     "source": {
       "description": "The source of the recording - audience (AUD) or mixing desk (SBD)",
       "type": "string",
@@ -72,6 +80,9 @@
     "setlist": {
       "description": "Songs played",
       "type": "array",
+      "items": {
+        "type": "string"
+      },
       "$comment": "example, ANACONDA"
     },
     "notes": {
@@ -80,6 +91,6 @@
       "$comment": "example, mix fixes cut in Alice by patching in 5secs from V2"
     }
   },
-  "required": ["id", "artist", "date","source" ],
+  "required": ["id", "artist", "date", "version"],
   "additionalProperties": false
 }

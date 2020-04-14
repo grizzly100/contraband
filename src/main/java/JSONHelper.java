@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * Validate a JSON document against a schema
  */
-public class JSONValidate {
+public class JSONHelper {
 
     public static boolean isValid(File fileSubject, JSONObject jsonSchema) {
         boolean valid = false;
@@ -28,10 +28,6 @@ public class JSONValidate {
         return valid;
     }
 
-    public static boolean isValid(InputStream document, InputStream schema) {
-        return isValid(getObject(document), getObject(schema));
-    }
-
     /**
      * Validate the document against the schema
      *
@@ -41,13 +37,12 @@ public class JSONValidate {
      */
     public static boolean isValid(JSONObject jsonDocument, JSONObject jsonSchema) {
 
-        Schema schema = null;
         try {
             SchemaLoader loader = SchemaLoader.builder()
                     .schemaJson(jsonSchema)
                     .draftV7Support()
                     .build();
-            schema = loader.load().build();
+            Schema schema = loader.load().build();
 
             //schema = SchemaLoader.load(jsonSchema);
             //System.out.println(schema.getDescription());
@@ -67,7 +62,6 @@ public class JSONValidate {
      * @return the JSONObject representation
      */
     public static JSONObject getObject(InputStream is) {
-        JSONObject jsonObject = new JSONObject(new JSONTokener(is));
-        return jsonObject;
+        return new JSONObject(new JSONTokener(is));
     }
 }

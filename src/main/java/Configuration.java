@@ -1,20 +1,22 @@
 import org.json.JSONObject;
-import org.json.JSONTokener;
 
 import java.io.*;
-import java.util.Map;
 
 /**
  * Load configuration file for the program
  */
 public class Configuration {
 
-    public static Map<String, Object> getConfiguration() {
-        boolean isValid = JSONValidate.isValid(getConfigInputStream(), getSchemaInputStream());
+    public static JSONObject getConfiguration() {
+
+        JSONObject document = JSONHelper.getObject(getConfigInputStream());
+        JSONObject schema = JSONHelper.getObject(getSchemaInputStream());
+
+        boolean isValid = JSONHelper.isValid(document, schema);
         if (!isValid) {
             System.exit(-1);
         }
-        return new JSONParse().parse(getConfigInputStream());
+        return document;
     }
 
     protected static InputStream getConfigInputStream() {

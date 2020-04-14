@@ -1,11 +1,10 @@
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -20,17 +19,16 @@ public class Library {
         String root = "M:\\Music Lossless\\Gothic\\The Sisters Of Mercy (Bootlegs)\\1983\\The Sisters Of Mercy - 1983-06-29 - Brixton Ace, London";
 
         // Get configuration parameters for this walk
-        Map<String, Object> configMap = Configuration.getConfiguration();
+        JSONObject configMap = Configuration.getConfiguration();
 
         // Cache the schema to be used for validation
         InputStream schema = getSchemaInputStream(configMap.get("validationSchema").toString());
-        JSONValidate v = new JSONValidate();
-        JSONObject schemaObj = v.getObject(schema);
+        JSONObject schemaObj = JSONHelper.getObject(schema);
 
         // Construct a visitor that will print outputProperties metadata
-        List<String> props = (List<String>) configMap.get("outputProperties");
-        Predicate<File> validator = f -> JSONValidate.isValid(f,schemaObj);
-        Function<Map<String, Object>, String> formatter = x -> format(x, props, ";");
+        JSONArray props = (JSONArray) configMap.get("outputProperties");
+        Predicate<File> validator = f -> JSONHelper.isValid(f,schemaObj);
+        Function<JSONObject, String> formatter = x -> format(x, props, ";");
         Consumer<File> printer = p -> print(p, schemaObj,formatter);
 
 
@@ -46,8 +44,9 @@ public class Library {
      * @param delimiter  delimiter between properties
      * @return string representation
      */
-    protected static String format(Map<String, Object> document, List<String> properties, String delimiter) {
-        return properties.stream()
+    protected static String format(JSONObject document, JSONArray properties, String delimiter) {
+        return properties.toList().stream()
+                .map(String::valueOf)
                 .map(document::get) // look-up property name in document
                 .map(String::valueOf) // handle nulls
                 .collect(Collectors.joining(delimiter));
@@ -75,16 +74,14 @@ public class Library {
     }
 
 
-    protected static void print(File file, JSONObject schemaObj, Function<Map<String, Object>, String> formatter) {
+    protected static void print(File file, JSONObject schemaObj, Function<JSONObject, String> formatter) {
         try {
             // Validate
             InputStream is = new FileInputStream(file);
-            JSONValidate v = new JSONValidate();
-            if (JSONValidate.isValid(v.getObject(is), schemaObj)) {
-                InputStream is2 = new FileInputStream(file);
-                Map<String, Object> m = new JSONParse().parse(is2);
+            JSONObject document = JSONHelper.getObject(is);
 
-                String values = formatter.apply(m);
+            if (JSONHelper.isValid(document, schemaObj)) {
+                String values = formatter.apply(document);
                 System.out.println(values);
             } else {
                 System.err.println("FAIL: " + file.getName());
