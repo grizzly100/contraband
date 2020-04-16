@@ -1,3 +1,5 @@
+package org.grizzlytech.contraband;
+
 import org.json.JSONObject;
 
 import java.io.*;
@@ -14,7 +16,7 @@ public class Configuration {
 
         boolean isValid = JSONHelper.isValid(document, schema);
         if (!isValid) {
-            System.exit(-1);
+            Library.logError("Config schema invalid", true);
         }
         return document;
     }

@@ -12,6 +12,19 @@
       "description": "properties to output",
       "type": "array",
       "$comment": "id, artist etc"
+    },
+    "rootDir": {
+      "description": "root path of library",
+      "type": "string"
+    },
+    "target": {
+      "description": "stdout or excel",
+      "type": "string",
+      "enum" : [ "STDOUT", "FILE", "EXCEL"]
+    },
+    "targetDir": {
+      "description": "target path to write to",
+      "type": "string"
     }
   },
   "required": ["validationSchema", "outputProperties"],

@@ -12,7 +12,7 @@
     "artist": {
       "description": "The name of the artist",
       "type": "string",
-      "$comment": "e.g., The Sisters of Mercy",
+      "$comment": "e.g., The Sisters of Mercy"
     },
     "date": {
       "description": "The date of the recording",
