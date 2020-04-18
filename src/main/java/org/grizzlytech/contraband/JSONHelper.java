@@ -5,6 +5,7 @@ import org.everit.json.schema.SchemaException;
 import org.everit.json.schema.ValidationException;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
@@ -19,19 +20,19 @@ import java.util.function.Consumer;
  */
 public class JSONHelper {
 
-    public static boolean isValid(File fileSubject, JSONObject jsonSchema) {
-        boolean valid = false;
+    public static JSONObject parseJSONObject(InputStream is) {
+        return new JSONObject(new JSONTokener(is));
+    }
+
+    public static JSONObject parseJSONObject(File fileSubject) {
+        JSONObject result = null;
         try {
             InputStream subject = new FileInputStream(fileSubject);
-            if (isValid(getObject(subject), jsonSchema)) {
-                valid = true;
-            } else {
-                System.err.println("Failed validation: " + fileSubject.getName());
-            }
-        } catch (FileNotFoundException ex) {
-            System.err.println("Failed to load: " + fileSubject.getName() + " : " + ex.getMessage());
+            result = parseJSONObject(subject);
+        } catch (JSONException | FileNotFoundException ex) {
+            Library.logError(fileSubject.getAbsolutePath() + " with " + ex.getMessage(), false);
         }
-        return valid;
+        return result;
     }
 
     /**
@@ -43,6 +44,7 @@ public class JSONHelper {
      */
     public static boolean isValid(JSONObject jsonDocument, JSONObject jsonSchema) {
 
+        //Library.logInfo("OK" + jsonDocument.toString());
         try {
             SchemaLoader loader = SchemaLoader.builder()
                     .schemaJson(jsonSchema)
@@ -53,23 +55,12 @@ public class JSONHelper {
             //schema = SchemaLoader.load(jsonSchema);
             //System.out.println(schema.getDescription());
             schema.validate(jsonDocument);
-        } catch (SchemaException ex) {
-            System.err.println(ex.fillInStackTrace());
-        } catch (ValidationException ex) {
-            System.err.println(ex.getAllMessages());
+        } catch (SchemaException | ValidationException ex) {
+            Library.logError(ex.getMessage(), false);
         }
         return true;
     }
 
-    /**
-     * Remember an InputStream can generally only be read once, so do not call twice with same stream
-     *
-     * @param is InputStream to read
-     * @return the JSONObject representation
-     */
-    public static JSONObject getObject(InputStream is) {
-        return new JSONObject(new JSONTokener(is));
-    }
 
     public static List<String> toListOfString(JSONArray jsonArray) {
         ArrayList<String> result = new ArrayList<>(jsonArray.length());

@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -30,16 +31,15 @@ public class Library {
 
         // Cache the schema to be used for validation
         InputStream schema = getSchemaInputStream(configMap.get("validationSchema").toString());
-        JSONObject schemaObj = JSONHelper.getObject(schema);
+        JSONObject schemaObj = JSONHelper.parseJSONObject(schema);
 
         // Visit the root, printing all info.json files
         try (Target target = getTarget(configMap)) {
 
-            // Construct a predicate that will validate the JSON files
-            Predicate<File> validator = f -> JSONHelper.isValid(f, schemaObj);
+            Predicate<JSONObject> validator = d -> JSONHelper.isValid(d, schemaObj);
 
             // Construct a consumer that will print the outputProperties metadata
-            Consumer<File> printer = f -> print(f, schemaObj, target);
+            Consumer<JSONObject> printer = f -> print(f, target);
 
             // Visit all files from the root
             visit(root, validator, printer);
@@ -55,14 +55,16 @@ public class Library {
      * @param root    directory to start from
      * @param visitor consumer to apply
      */
-    protected static void visit(File root, Predicate<File> validator, Consumer<File> visitor) {
+    protected static void visit(File root, Predicate<JSONObject> validator, Consumer<JSONObject> visitor) {
         final String JSON_PATH_EXT = ".json";
         try (Stream<Path> walk = Files.walk(Paths.get(root.getAbsolutePath()))) {
             walk
                     .filter(Files::isRegularFile)
-                    //.peek(System.out::println)
                     .filter(p -> p.toString().endsWith(JSON_PATH_EXT))
-                    .map(x -> x.toFile())
+                    .map(Path::toFile)
+                    //.peek(System.out::println)
+                    .map(JSONHelper::parseJSONObject)
+                    .filter(Objects::nonNull)
                     .filter(validator)
                     .forEachOrdered(visitor);
         } catch (IOException ex) {
@@ -71,20 +73,8 @@ public class Library {
     }
 
 
-    protected static void print(File file, JSONObject schemaObj, Target output) {
-        try {
-            // Validate
-            InputStream is = new FileInputStream(file);
-            JSONObject document = JSONHelper.getObject(is);
-
-            if (JSONHelper.isValid(document, schemaObj)) {
-                output.write(document);
-            } else {
-                logError(" Invalid schema: " + file.getName(), false);
-            }
-        } catch (FileNotFoundException ex) {
-            logError("Not found : " + file.getName() + ": " + ex.getMessage(), false);
-        }
+    protected static void print(JSONObject jsonSubject, Target output) {
+                output.write(jsonSubject);
     }
 
     protected static InputStream getSchemaInputStream(String filename) {

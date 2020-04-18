@@ -11,8 +11,8 @@ public class Configuration {
 
     public static JSONObject getConfiguration() {
 
-        JSONObject document = JSONHelper.getObject(getConfigInputStream());
-        JSONObject schema = JSONHelper.getObject(getSchemaInputStream());
+        JSONObject document = JSONHelper.parseJSONObject(getConfigInputStream());
+        JSONObject schema = JSONHelper.parseJSONObject(getSchemaInputStream());
 
         boolean isValid = JSONHelper.isValid(document, schema);
         if (!isValid) {

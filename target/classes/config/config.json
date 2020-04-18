@@ -1,7 +1,7 @@
 {
   "validationSchema" : "recordingSchema.json",
-  "outputProperties" : ["id", "date","version","source","generation","quality", "resolution","notes"],
-  "rootDir" : "M:\\Music Lossless\\Gothic\\The Sisters Of Mercy (Bootlegs)\\1982\\The Sisters Of Mercy - 1982-07-10 - Zig Zag Club, London",
-  "target" : "EXCEL",
+  "outputProperties" : ["id", "date","version","source","generation","origin","quality", "resolution","notes"],
+  "rootDir" : "M:\\Music Lossless\\Gothic\\The Sisters Of Mercy (Bootlegs)\\1984 Part II\\The Sisters Of Mercy - 1984-11-17 - Odeon, Munster",
+  "target" : "STDOUT",
   "targetDir" : "N:"
 }
