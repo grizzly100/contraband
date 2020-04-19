@@ -33,7 +33,7 @@ public class Library {
         // Get configuration parameters for this library walk
         JSONObject jsonConfig = Configuration.getConfiguration();
 
-        File root = getDir(jsonConfig, "rootDir");
+        File root = Configuration.getDir(jsonConfig, "rootDir");
         logger.atInfo().log("Scanning root: %s", root.getAbsolutePath());
 
         // Cache the isSchema to be used for validation
@@ -78,19 +78,6 @@ public class Library {
 
     protected static InputStream getSchemaInputStream(String filename) {
         return Library.class.getResourceAsStream("/schema/" + filename);
-    }
-
-    protected static File getDir(JSONObject jsonConfig, String property) {
-        String path = jsonConfig.getString(property);
-        if (path == null) {
-            logger.atSevere().log("No such property: %s", property);
-        }
-        assert path != null;
-        File dir = new File(path);
-        if (!dir.exists()) {
-            logger.atSevere().log("Cannot find directory: %s", dir.getAbsolutePath());
-        }
-        return dir;
     }
 
     protected static Target getTarget(JSONObject jsonConfig) {

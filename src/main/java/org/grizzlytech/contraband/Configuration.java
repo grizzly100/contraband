@@ -25,6 +25,19 @@ public class Configuration {
         return document;
     }
 
+    public static File getDir(JSONObject jsonConfig, String property) {
+        String path = jsonConfig.getString(property);
+        if (path == null) {
+            logger.atSevere().log("No such property: %s", property);
+        }
+        assert path != null;
+        File dir = new File(path);
+        if (!dir.exists()) {
+            logger.atSevere().log("Cannot find directory: %s", dir.getAbsolutePath());
+        }
+        return dir;
+    }
+
     protected static InputStream getConfigInputStream() {
         final String CONFIG_FILE = "/config/config.json";
         return Configuration.class.getResourceAsStream(CONFIG_FILE);

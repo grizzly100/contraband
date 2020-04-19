@@ -1,5 +1,6 @@
 package org.grizzlytech.contraband.out;
 
+import com.google.common.flogger.FluentLogger;
 import org.grizzlytech.contraband.JSONHelper;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -9,7 +10,9 @@ import java.util.stream.Collectors;
 
 public class TargetStdOut implements Target {
 
-    protected JSONObject config = null;
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
+    protected JSONObject jsonConfig = null;
 
     protected List<String> outputProperties = null;
 
@@ -18,14 +21,14 @@ public class TargetStdOut implements Target {
     public TargetStdOut() {
     }
 
-    public TargetStdOut(JSONObject config) {
-        open(config);
+    public TargetStdOut(JSONObject jsonConfig) {
+        open(jsonConfig);
     }
 
     @Override
     public void open(JSONObject config) {
-        System.out.println("base open");
-        this.config = config;
+        logger.atInfo().log("Reading outputProperties");
+        this.jsonConfig = config;
         this.outputProperties = JSONHelper.toListOfString((JSONArray) config.get("outputProperties"));
     }
 
@@ -35,7 +38,7 @@ public class TargetStdOut implements Target {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
     }
 
     protected String formatOutputProperties(JSONObject document) {

@@ -3,6 +3,7 @@ package org.grizzlytech.contraband.out;
 import com.google.common.flogger.FluentLogger;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.grizzlytech.contraband.Configuration;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -14,11 +15,10 @@ import java.time.format.DateTimeFormatter;
  */
 public class TargetExcelOut extends TargetStdOut {
 
-    private static final String FILE_PATH = "N:";
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
     private static final String FILE_NAME = "Library-";
     private static final String FILE_EXT = ".xlsx";
-
-    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     private File outputFile;
     private Workbook wb;
@@ -30,19 +30,21 @@ public class TargetExcelOut extends TargetStdOut {
     }
 
     @Override
-    public void open(JSONObject config) {
-        super.open(config);
+    public void open(JSONObject jsonConfig) {
+        super.open(jsonConfig);
 
-        String absolutePath = FILE_PATH + File.separator + FILE_NAME + now() + FILE_EXT;
+        // Build output filename
+        File targetDir = Configuration.getDir(jsonConfig, "targetDir");
+        String absolutePath = targetDir.getAbsolutePath() + File.separator + FILE_NAME + now() + FILE_EXT;
         this.outputFile = new File(absolutePath);
-        System.out.println("Output file will be: " + this.outputFile.getAbsolutePath());
+        logger.atInfo().log("Output file will be: %s", this.outputFile.getAbsolutePath());
 
-        System.out.println("Open");
+        // Open Excel workbook
         this.wb = new XSSFWorkbook();
 
         CreationHelper createHelper = wb.getCreationHelper();
 
-        sheet = wb.createSheet("new sheet");
+        sheet = wb.createSheet("Recordings");
 
         writeHeader();
     }
