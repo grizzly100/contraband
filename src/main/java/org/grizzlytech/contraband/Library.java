@@ -61,7 +61,7 @@ public class Library {
 
         try (Stream<Path> walk = Files.walk(Paths.get(root.getAbsolutePath()))) {
             walk
-                    // Filter out .JSON files
+                    // Filter out non .json files
                     .filter(Files::isRegularFile)
                     .filter(isJSON)
                     .map(Path::toFile)
