@@ -20,24 +20,28 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Scan a library of recordings seeking .json files that contain metadata conforming to
+ * the required Schema. Output metadata to a configurable Target (STDOUT, EXCEL)
+ */
 public class Library {
 
     private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
-    public static void main(String args[]) throws FileNotFoundException, IOException {
+    public static void main(String[] args) {
 
-        // Get configuration parameters for this walk
-        JSONObject configMap = Configuration.getConfiguration();
+        // Get configuration parameters for this library walk
+        JSONObject jsonConfig = Configuration.getConfiguration();
 
-        File root = getDir(configMap, "rootDir");
+        File root = getDir(jsonConfig, "rootDir");
         logger.atInfo().log("Scanning root: %s", root.getAbsolutePath());
 
         // Cache the isSchema to be used for validation
-        InputStream isSchema = getSchemaInputStream(configMap.get("validationSchema").toString());
+        InputStream isSchema = getSchemaInputStream(jsonConfig.get("validationSchema").toString());
         JSONObject jsonSchema = JSONHelper.parseJSONObject(isSchema);
 
         // Visit the root, printing all info.json files
-        try (Target target = getTarget(configMap)) {
+        try (Target target = getTarget(jsonConfig)) {
             visit(root, JSONHelper.getValidator(jsonSchema), target::write);
         } catch (Exception ex) {
             logger.atSevere().withCause(ex).log("Terminating during library walk");
@@ -52,12 +56,14 @@ public class Library {
      * @param visitor consumer to apply
      */
     protected static void visit(File root, Predicate<JSONObject> validator, Consumer<JSONObject> visitor) {
+        final String JSON_PATH_EXT = ".json";
+        final Predicate<Path> isJSON = p -> p.toString().endsWith(JSON_PATH_EXT);
 
         try (Stream<Path> walk = Files.walk(Paths.get(root.getAbsolutePath()))) {
             walk
                     // Filter out .JSON files
                     .filter(Files::isRegularFile)
-                    .filter(JSONHelper.JSON_PATH)
+                    .filter(isJSON)
                     .map(Path::toFile)
                     // Parse the JSONObject, discard nulls, then validate
                     .map(JSONHelper::parseJSONObject)
@@ -74,44 +80,27 @@ public class Library {
         return Library.class.getResourceAsStream("/schema/" + filename);
     }
 
-    protected static File getDir(JSONObject configMap, String property) {
-        String path = configMap.getString(property);
+    protected static File getDir(JSONObject jsonConfig, String property) {
+        String path = jsonConfig.getString(property);
         if (path == null) {
-            logError("No such property " + property, true);
+            logger.atSevere().log("No such property: %s", property);
         }
+        assert path != null;
         File dir = new File(path);
         if (!dir.exists()) {
-            logError("Cannot find " + dir.getAbsolutePath(), true);
+            logger.atSevere().log("Cannot find directory: %s", dir.getAbsolutePath());
         }
         return dir;
     }
 
-    protected static Target getTarget(JSONObject configMap) {
-        String target = configMap.optString("target", "STDOUT");
-        Target result = null;
-        switch (target.toUpperCase()) {
-            case "EXCEL":
-                result = new TargetExcelOut(configMap);
-                break;
-
-            default:
-                result = new TargetStdOut(configMap);
+    protected static Target getTarget(JSONObject jsonConfig) {
+        String target = jsonConfig.optString("target", "STDOUT");
+        Target result;
+        if ("EXCEL".equals(target.toUpperCase())) {
+            result = new TargetExcelOut(jsonConfig);
+        } else {
+            result = new TargetStdOut(jsonConfig);
         }
         return result;
-    }
-
-    public static void logInfo(String message) {
-        System.out.println("INFO: " + message);
-    }
-
-    public static void logError(String message, boolean fatal) {
-        System.err.println("ERROR: " + message);
-        if (fatal) System.exit(-1);
-    }
-
-    public static void logError(Exception ex, boolean fatal) {
-        System.err.println("ERROR: " + ex.getMessage());
-        ex.printStackTrace(System.err);
-        if (fatal) System.exit(-1);
     }
 }

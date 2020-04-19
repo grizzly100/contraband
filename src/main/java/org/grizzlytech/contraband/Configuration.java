@@ -1,5 +1,6 @@
 package org.grizzlytech.contraband;
 
+import com.google.common.flogger.FluentLogger;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -9,6 +10,8 @@ import java.io.*;
  */
 public class Configuration {
 
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
     public static JSONObject getConfiguration() {
 
         JSONObject document = JSONHelper.parseJSONObject(getConfigInputStream());
@@ -16,7 +19,8 @@ public class Configuration {
 
         boolean isValid = JSONHelper.isValid(document, schema);
         if (!isValid) {
-            Library.logError("Config schema invalid", true);
+            logger.atSevere().log("Config schema invalid");
+            System.exit(-1);
         }
         return document;
     }

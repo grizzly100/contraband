@@ -1,5 +1,6 @@
 package org.grizzlytech.contraband;
 
+import com.google.common.flogger.FluentLogger;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.SchemaException;
 import org.everit.json.schema.ValidationException;
@@ -18,12 +19,14 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
- * Validate a JSON document against a schema
+ * Validate a JSON document against a schema.
+ * <p>
+ * Use "Everit" JSON schema parser
+ * https://github.com/everit-org/json-schema
  */
 public class JSONHelper {
 
-    final public static String JSON_PATH_EXT = ".json";
-    final public static Predicate<Path> JSON_PATH = p -> p.toString().endsWith(JSON_PATH_EXT);
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     public static JSONObject parseJSONObject(InputStream is) {
         return new JSONObject(new JSONTokener(is));
@@ -35,7 +38,8 @@ public class JSONHelper {
             InputStream subject = new FileInputStream(fileSubject);
             result = parseJSONObject(subject);
         } catch (JSONException | FileNotFoundException ex) {
-            Library.logError(fileSubject.getAbsolutePath() + " with " + ex.getMessage(), false);
+            logger.atSevere().log("Problem parsing file: %s\n%s",
+                    fileSubject.getAbsolutePath(), ex.getMessage());
         }
         return result;
     }
@@ -53,23 +57,20 @@ public class JSONHelper {
      */
     public static boolean isValid(JSONObject jsonDocument, JSONObject jsonSchema) {
 
-        //Library.logInfo("OK" + jsonDocument.toString());
         try {
             SchemaLoader loader = SchemaLoader.builder()
                     .schemaJson(jsonSchema)
                     .draftV7Support()
                     .build();
             Schema schema = loader.load().build();
-
-            //schema = SchemaLoader.load(jsonSchema);
-            //System.out.println(schema.getDescription());
             schema.validate(jsonDocument);
         } catch (SchemaException | ValidationException ex) {
-            Library.logError(ex.getMessage(), false);
+            logger.atWarning().log("Problem validating JSONObject vs schema: %s\n%s\n%s",
+                    jsonSchema.optString("title"), ex.getMessage(), jsonDocument.toString());
+
         }
         return true;
     }
-
 
     public static List<String> toListOfString(JSONArray jsonArray) {
         ArrayList<String> result = new ArrayList<>(jsonArray.length());

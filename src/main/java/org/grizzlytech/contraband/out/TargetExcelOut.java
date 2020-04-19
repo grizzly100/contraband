@@ -1,5 +1,6 @@
 package org.grizzlytech.contraband.out;
 
+import com.google.common.flogger.FluentLogger;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.json.JSONObject;
@@ -8,11 +9,16 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Target which write to EXCEL .xlsx using Apache POI
+ */
 public class TargetExcelOut extends TargetStdOut {
 
     private static final String FILE_PATH = "N:";
     private static final String FILE_NAME = "Library-";
     private static final String FILE_EXT = ".xlsx";
+
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
 
     private File outputFile;
     private Workbook wb;
@@ -42,7 +48,7 @@ public class TargetExcelOut extends TargetStdOut {
     }
 
     protected void writeHeader() {
-        if (sheet==null) throw new IllegalStateException("sheet not set");
+        if (sheet == null) throw new IllegalStateException("sheet not set");
 
         // Create a row and put some cells in it. Rows are 0 based.
         Row row = sheet.createRow(rowNum++);
@@ -55,7 +61,9 @@ public class TargetExcelOut extends TargetStdOut {
 
     @Override
     public void write(JSONObject document) {
-        if (sheet==null) throw new IllegalStateException("sheet not set");
+        super.write(document); // write to STDOUT to help observe progress
+
+        if (sheet == null) throw new IllegalStateException("sheet not set");
 
         // Create a row and put some cells in it. Rows are 0 based.
         Row row = sheet.createRow(rowNum++);
@@ -67,18 +75,15 @@ public class TargetExcelOut extends TargetStdOut {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         try (OutputStream fileOut = new FileOutputStream(this.outputFile)) {
             wb.write(fileOut);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    protected static String now()
-    {
+    protected static String now() {
         LocalDateTime ldt = LocalDateTime.now();
         DateTimeFormatter pattern = DateTimeFormatter
                 .ofPattern("yyyyMMdd-HHmmss");
