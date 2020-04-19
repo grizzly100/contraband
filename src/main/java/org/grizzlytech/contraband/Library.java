@@ -1,5 +1,6 @@
 package org.grizzlytech.contraband;
 
+import com.google.common.flogger.FluentLogger;
 import org.grizzlytech.contraband.out.Target;
 import org.grizzlytech.contraband.out.TargetExcelOut;
 import org.grizzlytech.contraband.out.TargetStdOut;
@@ -21,30 +22,25 @@ import java.util.stream.Stream;
 
 public class Library {
 
+    private static final FluentLogger logger = FluentLogger.forEnclosingClass();
+
     public static void main(String args[]) throws FileNotFoundException, IOException {
 
         // Get configuration parameters for this walk
         JSONObject configMap = Configuration.getConfiguration();
 
         File root = getDir(configMap, "rootDir");
-        logInfo("Scanning root " + root.getAbsolutePath());
+        logger.atInfo().log("Scanning root: %s", root.getAbsolutePath());
 
-        // Cache the schema to be used for validation
-        InputStream schema = getSchemaInputStream(configMap.get("validationSchema").toString());
-        JSONObject schemaObj = JSONHelper.parseJSONObject(schema);
+        // Cache the isSchema to be used for validation
+        InputStream isSchema = getSchemaInputStream(configMap.get("validationSchema").toString());
+        JSONObject jsonSchema = JSONHelper.parseJSONObject(isSchema);
 
         // Visit the root, printing all info.json files
         try (Target target = getTarget(configMap)) {
-
-            Predicate<JSONObject> validator = d -> JSONHelper.isValid(d, schemaObj);
-
-            // Construct a consumer that will print the outputProperties metadata
-            Consumer<JSONObject> printer = f -> print(f, target);
-
-            // Visit all files from the root
-            visit(root, validator, printer);
+            visit(root, JSONHelper.getValidator(jsonSchema), target::write);
         } catch (Exception ex) {
-            logError(ex, false);
+            logger.atSevere().withCause(ex).log("Terminating during library walk");
         }
     }
 
@@ -56,25 +52,22 @@ public class Library {
      * @param visitor consumer to apply
      */
     protected static void visit(File root, Predicate<JSONObject> validator, Consumer<JSONObject> visitor) {
-        final String JSON_PATH_EXT = ".json";
+
         try (Stream<Path> walk = Files.walk(Paths.get(root.getAbsolutePath()))) {
             walk
+                    // Filter out .JSON files
                     .filter(Files::isRegularFile)
-                    .filter(p -> p.toString().endsWith(JSON_PATH_EXT))
+                    .filter(JSONHelper.JSON_PATH)
                     .map(Path::toFile)
-                    //.peek(System.out::println)
+                    // Parse the JSONObject, discard nulls, then validate
                     .map(JSONHelper::parseJSONObject)
                     .filter(Objects::nonNull)
                     .filter(validator)
+                    // Apply the visitor
                     .forEachOrdered(visitor);
         } catch (IOException ex) {
-            logError(ex, false);
+            logger.atSevere().withCause(ex).log("Terminating during library walk");
         }
-    }
-
-
-    protected static void print(JSONObject jsonSubject, Target output) {
-                output.write(jsonSubject);
     }
 
     protected static InputStream getSchemaInputStream(String filename) {

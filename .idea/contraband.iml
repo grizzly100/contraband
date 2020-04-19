@@ -13,7 +13,9 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Maven: jakarta.json:jakarta.json-api:2.0.0-RC2" level="project" />
-    <orderEntry type="library" name="Maven: org.glassfish:jakarta.json:2.0.0-RC2" level="project" />
+    <orderEntry type="library" name="Maven: com.google.flogger:flogger:0.5.1" level="project" />
+    <orderEntry type="library" name="Maven: org.checkerframework:checker-compat-qual:2.5.3" level="project" />
+    <orderEntry type="library" scope="RUNTIME" name="Maven: com.google.flogger:flogger-system-backend:0.5.1" level="project" />
     <orderEntry type="library" name="Maven: com.github.everit-org.json-schema:org.everit.json.schema:1.12.1" level="project" />
     <orderEntry type="library" name="Maven: org.json:json:20190722" level="project" />
     <orderEntry type="library" name="Maven: commons-validator:commons-validator:1.6" level="project" />

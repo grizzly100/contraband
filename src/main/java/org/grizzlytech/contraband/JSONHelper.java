@@ -10,15 +10,20 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Validate a JSON document against a schema
  */
 public class JSONHelper {
+
+    final public static String JSON_PATH_EXT = ".json";
+    final public static Predicate<Path> JSON_PATH = p -> p.toString().endsWith(JSON_PATH_EXT);
 
     public static JSONObject parseJSONObject(InputStream is) {
         return new JSONObject(new JSONTokener(is));
@@ -33,6 +38,10 @@ public class JSONHelper {
             Library.logError(fileSubject.getAbsolutePath() + " with " + ex.getMessage(), false);
         }
         return result;
+    }
+
+    public static Predicate<JSONObject> getValidator(JSONObject jsonSchema) {
+        return d -> isValid(d, jsonSchema);
     }
 
     /**
