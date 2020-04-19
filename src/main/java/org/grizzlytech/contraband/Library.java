@@ -36,7 +36,7 @@ public class Library {
         File root = Configuration.getDir(jsonConfig, "rootDir");
         logger.atInfo().log("Scanning root: %s", root.getAbsolutePath());
 
-        // Cache the isSchema to be used for validation
+        // Cache the jsonSchema to be used for validation
         InputStream isSchema = getSchemaInputStream(jsonConfig.get("validationSchema").toString());
         JSONObject jsonSchema = JSONHelper.parseJSONObject(isSchema);
 
