@@ -1,7 +1,7 @@
 {
   "validationSchema" : "recordingSchema.json",
   "outputProperties" : ["id", "date","version","source","generation","origin","quality", "resolution","notes"],
-  "rootDir" : "M:\\Music Lossless\\Gothic\\The Sisters Of Mercy (Bootlegs)\\1984 Part II\\The Sisters Of Mercy - 1984-10-22 - Top Rank, Brighton",
-  "target" : "EXCEL",
+  "rootDir" : "M:\\Music Lossless\\Gothic\\The Sisters Of Mercy (Bootlegs)\\1985 Part II\\The Sisters Of Mercy - 1985-05-17 - Kolingsborg Club, Stockholm",
+  "target" : "STDOUT",
   "targetDir" : "N:"
 }

@@ -15,7 +15,7 @@ public class Configuration {
     public static JSONObject getConfiguration() {
 
         JSONObject document = JSONHelper.parseJSONObject(getConfigInputStream());
-        JSONObject schema = JSONHelper.parseJSONObject(getSchemaInputStream());
+        JSONObject schema = JSONHelper.parseJSONObject(getConfigSchemaInputStream());
 
         boolean isValid = JSONHelper.isValid(document, schema);
         if (!isValid) {
@@ -43,8 +43,13 @@ public class Configuration {
         return Configuration.class.getResourceAsStream(CONFIG_FILE);
     }
 
-    protected static InputStream getSchemaInputStream() {
+    protected static InputStream getConfigSchemaInputStream() {
         final String SCHEMA_FILE = "/schema/configSchema.json";
         return Configuration.class.getResourceAsStream(SCHEMA_FILE);
+    }
+
+    protected static InputStream getLibrarySchemaInputStream(JSONObject jsonConfig) {
+        String filename = jsonConfig.getString("validationSchema");
+        return Library.class.getResourceAsStream("/schema/" + filename);
     }
 }

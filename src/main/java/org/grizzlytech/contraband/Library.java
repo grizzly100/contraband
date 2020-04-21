@@ -3,6 +3,7 @@ package org.grizzlytech.contraband;
 import com.google.common.flogger.FluentLogger;
 import org.grizzlytech.contraband.out.Target;
 import org.grizzlytech.contraband.out.TargetExcelOut;
+import org.grizzlytech.contraband.out.TargetFactory;
 import org.grizzlytech.contraband.out.TargetStdOut;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,11 +38,11 @@ public class Library {
         logger.atInfo().log("Scanning root: %s", root.getAbsolutePath());
 
         // Cache the jsonSchema to be used for validation
-        InputStream isSchema = getSchemaInputStream(jsonConfig.get("validationSchema").toString());
+        InputStream isSchema = Configuration.getLibrarySchemaInputStream(jsonConfig);
         JSONObject jsonSchema = JSONHelper.parseJSONObject(isSchema);
 
         // Visit the root, printing all info.json files
-        try (Target target = getTarget(jsonConfig)) {
+        try (Target target = TargetFactory.getTarget(jsonConfig)) {
             visit(root, JSONHelper.getValidator(jsonSchema), target::write);
         } catch (Exception ex) {
             logger.atSevere().withCause(ex).log("Terminating during library walk");
@@ -74,20 +75,5 @@ public class Library {
         } catch (IOException ex) {
             logger.atSevere().withCause(ex).log("Terminating during library walk");
         }
-    }
-
-    protected static InputStream getSchemaInputStream(String filename) {
-        return Library.class.getResourceAsStream("/schema/" + filename);
-    }
-
-    protected static Target getTarget(JSONObject jsonConfig) {
-        String target = jsonConfig.optString("target", "STDOUT");
-        Target result;
-        if ("EXCEL".equals(target.toUpperCase())) {
-            result = new TargetExcelOut(jsonConfig);
-        } else {
-            result = new TargetStdOut(jsonConfig);
-        }
-        return result;
     }
 }
